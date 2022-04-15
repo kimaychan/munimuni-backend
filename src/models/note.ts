@@ -18,7 +18,7 @@ interface NoteDoc extends Document {
 }
 
 const noteSchema = new Schema({
-  id: {
+  _id: {
     type: String,
     required: true
   },
@@ -41,7 +41,7 @@ const noteSchema = new Schema({
 
 noteSchema.statics.build = (attr: INote) => {
   return new Note({
-    id: uuidv4(),
+    _id: uuidv4(),
     created_at: Date.now(),
     ...attr
   })

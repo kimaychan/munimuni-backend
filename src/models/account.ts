@@ -16,7 +16,7 @@ interface AccountDoc extends Document {
 }
 
 const accountSchema = new Schema({
-  id: {
+  _id: {
     type: String,
     required: true
   },
@@ -36,7 +36,7 @@ const accountSchema = new Schema({
 
 accountSchema.statics.build = (attr: IAccount) => {
   return new Account({
-    id: uuidv4(),
+    _id: uuidv4(),
     created_at: Date.now(),
     ...attr
   })
