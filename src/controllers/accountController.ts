@@ -1,6 +1,8 @@
 import { Account } from './../models/account'
 import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+import conf from './../../appconf'
 
 async function isUsernameTaken (username: string): Promise<boolean> {
   try {
@@ -28,7 +30,18 @@ async function create (req: Request, res: Response, next: (e: any) => any) {
             } else {
               const account = Account.build({ ...form, password: hash })
               await account.save()
-              res.status(201).send(account._id)
+              const token = jwt.sign(
+                { id: account.id, username: account.username },
+                conf.TOKEN_KEY,
+                {
+                  expiresIn: "2h",
+                }
+              );
+              res.status(201).send({
+                id: account.id,
+                username: account.username,
+                token
+              })
             }
           })
         }
@@ -44,13 +57,24 @@ async function login (req: Request, res: Response, next: (e: any) => any) {
     const form = req.body
     const account = await Account.findOne({ 'username': form.username })
     if (account) {
-      bcrypt.genSalt(10, async (saltErr, salt) => {
+      bcrypt.genSalt(10, async (saltErr, _) => {
         if (saltErr) {
           throw saltErr
         } else {
           await bcrypt.compare(form.password, account.password, (_, isPasswordCorrect) => {
             if (isPasswordCorrect) {
-              res.status(200).send('Ok')
+              const token = jwt.sign(
+                { id: account.id, username: account.username },
+                conf.TOKEN_KEY,
+                {
+                  expiresIn: "2h",
+                }
+              )
+              res.status(200).send({
+                id: account.id,
+                username: account.username,
+                token
+              })
             } else {
               res.status(403).send('wrong')
             }
