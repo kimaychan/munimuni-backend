@@ -1,31 +1,18 @@
-import express, { Request, Response} from 'express'
+import express from 'express'
 import AccountController from './controllers/accountController'
 import NoteController from './controllers/noteController'
 
 const router = express.Router()
 
-router.get('/api/notes', (_: Request, res: Response) => {
-  return res.send([])
-})
+router.post('/api/login', AccountController.login)
 
-router.post('/api/note', async (req: Request, res: Response, next) => {
-  try {
-    const data = req.body;
-    const id = await NoteController.create(data)
-    return res.status(201).send(id)
-  } catch (e) {
-    next(e)
-  }
-})
+// account
 
-router.post('/api/account', async (req: Request, res: Response, next) => {
-  try {
-    const data = req.body;
-    const id = await AccountController.create(data)
-    return res.status(201).send(id)
-  } catch (e) {
-    return next(e)
-  }
-})
+router.post('/api/account', AccountController.create)
+
+// notes
+
+router.get('/api/notes', () => {})
+router.post('/api/notes', NoteController.create)
 
 export default router

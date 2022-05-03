@@ -1,15 +1,15 @@
 import { Note } from './../models/note'
+import { Request, Response } from 'express'
 
-interface NoteForm {
-  title: string;
-  id_account: string;
-  content: string;
-}
-
-async function create (form: NoteForm) {
-  const note = Note.build(form)
-  await note.save()
-  return note.id
+async function create (req: Request, res: Response, next: (e: any) => any) {
+  try {
+    const form = req.body
+    const note = Note.build(form)
+    await note.save()
+    return res.status(201).send(note._id)
+  } catch (e) {
+    next(e)
+  }
 }
 
 export default { create }
