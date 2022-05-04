@@ -28,7 +28,7 @@ const accountSchema = new Schema({
     type: String,
     required: true
   },
-  created_at: {
+  createdAt: {
     type: Number,
     required: true
   }
@@ -37,7 +37,7 @@ const accountSchema = new Schema({
 accountSchema.statics.build = (attr: IAccount) => {
   return new Account({
     _id: uuidv4(),
-    created_at: Date.now(),
+    createdAt: Date.now(),
     ...attr
   })
 }

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 interface INote {
   title: string;
-  id_account: string;
+  idAccount: string;
   content: string;
 }
 
@@ -13,7 +13,7 @@ interface NoteModelInterface extends Model<NoteDoc> {
 
 interface NoteDoc extends Document {
   title: string;
-  id_account: string;
+  idAccount: string;
   content: string;
 }
 
@@ -29,11 +29,11 @@ const noteSchema = new Schema({
   content: {
     type: String
   },
-  created_at: {
+  createdAt: {
     type: Number,
     required: true
   },
-  id_account: {
+  idAccount: {
     type: String,
     required: true
   }
@@ -42,7 +42,7 @@ const noteSchema = new Schema({
 noteSchema.statics.build = (attr: INote) => {
   return new Note({
     _id: uuidv4(),
-    created_at: Date.now(),
+    createdAt: Date.now(),
     ...attr
   })
 }

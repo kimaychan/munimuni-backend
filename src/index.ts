@@ -1,7 +1,8 @@
 import express from 'express'
 import { json } from 'body-parser'
 import cors from 'cors'
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
+import session from 'express-session'
 import routes from './routes'
 import config from './../appconf'
 
@@ -10,6 +11,22 @@ app.use(cors({
   origin: config.ALLOWED_ORIGIN
 }))
 app.use(json())
+let sess = {
+  secret: config.NOT_SO_SECRET_KEY,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false,
+    maxAge: 7200
+  }
+}
+
+if (config.NODE_ENV === 'production') {
+  app.set('trust proxy', 1) // trust first proxy
+  sess.cookie.secure = true // serve secure cookies
+}
+
+app.use(session(sess))
 app.use(express.urlencoded({ extended: true }))
 app.use(routes)
 

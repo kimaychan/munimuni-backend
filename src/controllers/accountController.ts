@@ -1,8 +1,6 @@
 import { Account } from './../models/account'
 import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
-import jwt from 'jsonwebtoken'
-import conf from './../../appconf'
 
 async function isUsernameTaken (username: string): Promise<boolean> {
   try {
@@ -18,7 +16,7 @@ async function create (req: Request, res: Response, next: (e: any) => any) {
     const form = req.body
     const isTaken = await isUsernameTaken(form.username)
     if (isTaken) {
-      res.status(409).send('Username already exists')
+      res.status(409).send('Username is already taken')
     } else {
       return bcrypt.genSalt(10, async (saltErr, salt) => {
         if (saltErr) {
@@ -29,19 +27,14 @@ async function create (req: Request, res: Response, next: (e: any) => any) {
               throw hashError
             } else {
               const account = Account.build({ ...form, password: hash })
+              req.session.userId = account.id
               await account.save()
-              const token = jwt.sign(
-                { id: account.id, username: account.username },
-                conf.TOKEN_KEY,
-                {
-                  expiresIn: "2h",
-                }
-              );
-              res.status(201).send({
-                id: account.id,
-                username: account.username,
-                token
-              })
+              res
+                .status(201)
+                .send({
+                  id: account.id,
+                  username: account.username
+                })
             }
           })
         }
@@ -63,18 +56,14 @@ async function login (req: Request, res: Response, next: (e: any) => any) {
         } else {
           await bcrypt.compare(form.password, account.password, (_, isPasswordCorrect) => {
             if (isPasswordCorrect) {
-              const token = jwt.sign(
-                { id: account.id, username: account.username },
-                conf.TOKEN_KEY,
-                {
-                  expiresIn: "2h",
-                }
-              )
-              res.status(200).send({
-                id: account.id,
-                username: account.username,
-                token
-              })
+              account.save()
+              req.session.userId = account.id
+              res
+                .status(200)
+                .send({
+                  id: account.id,
+                  username: account.username
+                })
             } else {
               res.status(403).send('wrong')
             }
@@ -89,4 +78,30 @@ async function login (req: Request, res: Response, next: (e: any) => any) {
   }
 }
 
-export default { create, login }
+async function logout (_: Request, res: Response, next: (e: any) => any) {
+  try {
+    return res
+      // .clearCookie('access_token')
+      .status(200)
+  } catch (e) {
+    next(e)
+  }
+}
+
+async function getMyAccount (req: Request, res: Response, next: (e: any) => any) {
+  try {
+    const account = await Account.findOne({ 'id': req.params.id })
+    if (account) {
+      res.status(200).send({
+        id: account.id,
+        username: account.username
+      })
+    } else {
+      res.status(404).send('Account not found')
+    }
+  } catch (e) {
+    return next(e)
+  }
+}
+
+export default { create, login, logout, getMyAccount }
