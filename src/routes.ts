@@ -8,6 +8,7 @@ const router = express.Router()
 router.post('/api/register', AccountController.create)
 router.post('/api/login', AccountController.login)
 router.post('/api/logout', AccountController.logout)
+router.post('/api/initialize', auth, () => {})
 
 // account
 

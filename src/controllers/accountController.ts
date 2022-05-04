@@ -78,11 +78,14 @@ async function login (req: Request, res: Response, next: (e: any) => any) {
   }
 }
 
-async function logout (_: Request, res: Response, next: (e: any) => any) {
+async function logout (req: Request, res: Response, next: (e: any) => any) {
   try {
-    return res
-      // .clearCookie('access_token')
-      .status(200)
+    req.session.destroy((error: Error) => {
+      if (error) {
+        return res.status(403)
+      }
+    })
+    return res.status(200)
   } catch (e) {
     next(e)
   }
